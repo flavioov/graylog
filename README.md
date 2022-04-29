@@ -1,11 +1,8 @@
 graylog helmfile 
 =================
-by: fovieira@stefanini.com
 
 ## repositório
 [roboll/helmfile](https://github.com/roboll/helmfile)
-
-[confluence](https://stefanini.atlassian.net/wiki/spaces/AR/pages/95813633/Instala+o+do+Graylog)
 
 ## instalação
  ```shell
