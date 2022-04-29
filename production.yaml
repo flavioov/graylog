@@ -1,0 +1,12 @@
+#EXAMPLE
+
+observability:
+  graylog:
+    server:
+      installed: true
+    elasticsearch:
+      installed: true
+    mongodb:
+      installed: true
+  fluentbit:
+    installed: true

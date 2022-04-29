@@ -1,0 +1,68 @@
+helmBinary: /usr/local/bin/helm
+
+environments:
+  develop:
+    values:
+    - ../develop.yaml
+    kubeContext: <k8-develop>
+  sandbox:
+    values:
+    - ../sandbox.yaml
+    kubeContext: <k8-sandbox>
+  stage:
+    values:
+    - ../stage.yaml
+    kubeContext: <k8-stage>
+  production:
+    values:
+    - ../production.yaml
+    kubeContext: <k8-prod>
+
+repositories:
+- name: bitnami
+  url: https://charts.bitnami.com/bitnami
+- name: kongz
+  url: https://charts.kong-z.com
+- name: fluent
+  url: https://fluent.github.io/helm-charts
+
+releases:
+- name: mongodb
+  namespace: ob
+  chart: bitnami/mongodb
+  createNamespace: true
+  installed: {{ .Values | getOrNil "observability.graylog.mongodb.installed" | default false }}
+  version: 10.20.2
+  values:
+  - values-mongodb.yaml
+- name: elasticsearch
+  namespace: ob
+  chart: bitnami/elasticsearch
+  createNamespace: true
+  installed: {{ .Values | getOrNil "observability.graylog.elasticsearch.installed" | default false }}
+  needs:
+  - mongodb
+  version: 15.6.0
+  values:
+  - values-elasticsearch.yaml
+- name: graylog
+  namespace: ob
+  chart: kongz/graylog
+  createNamespace: true
+  installed: {{ .Values | getOrNil "observability.graylog.server.installed" | default false }}
+  needs:
+  - mongodb
+  - elasticsearch
+  version: 1.7.10
+  values:
+  - values-graylog.yaml
+- name: fluent-bit
+  namespace: ob
+  chart: fluent/fluent-bit
+  createNamespace: true
+  installed: {{ .Values | getOrNil "observability.fluentbit.installed" | default false }}
+  needs:
+  - graylog
+  version: 0.15.15
+  values:
+  - values-fluentbit.yaml

@@ -1,0 +1,9 @@
+#EXAMPLE
+
+fullnameOverride: mongodb
+auth:
+  enabled: false
+persistence:
+  enabled: true
+  storageClass: "gp2"
+  size: 128Gi
