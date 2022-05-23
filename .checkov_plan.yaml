@@ -1,0 +1,5 @@
+directory:
+  - .
+file: tf.json
+framework:
+  - terraform_plan 

@@ -1,53 +1,44 @@
-graylog helmfile 
-=================
+# Graylog
 
-## repositório
-[roboll/helmfile](https://github.com/roboll/helmfile)
+Graylog and spotinst virtual nodegroup
 
-## instalação
- ```shell
- helmfile h # for help
- helmfile --debug -e <dev | stage | prod> s ync # to install
- ```
+# O Que é provisionado? 
 
-Para configurar este template você precisará de:
+São provisionados um virtual node group na spotinst com 2 máquinas.
 
-## helmfile.yaml
-- kubeconfig com o nome do cluster que deseja instalar o graylog
-- uma namespace livre, vazia ou de sua escolha para instalação dos catálogos aqui definidos
+## dependências
+- 1 cluster kubernetes
+- 1 cluster kubernetes na spotinst
+- credenciais de acesso à spotinst e ao cluster kubernetes
+
+# Environment Variables
+| Env     | Provider | Value |
+| :----------- | :------: | :-----------: |
+| `AWS_ACCESS_KEY_ID` | AWS | - |
+| `AWS_SECRET_ACCESS_KEY` | AWS | - |
+| `AWS_REGION`  | AWS | - |
+| `SPOTINST_TOKEN`| SPOTINST | - |
+| `SPOTINST_ACCOUNT`| SPOTINST | - |
+| `TF_INPUT`| LOCAL | 0 |
+| `TF_LOG` | LOCAL | trace |
+| `TF_LOG_PATH` | LOCAL | terraform.log |
+
+export SPOTINST_TOKEN=5f0d861d10307aba19573c6127c8498cfc80f33d1e6ae14a75a8ccb2b6987b5c
+export SPOTINST_ACCOUNT=act-d9550dda
+export TF_INPUT=0
+export TF_LOG_PATH=./terraform.log
+export TF_INPUT=trace
 
 
-## values.yaml
-### graylog
-- definir a url do elasticsearch conforme o nome da namespace
 
-obs: em
-```yaml
-elasticsearch:
-    version: "7"
-    hosts: "http://elasticsearch-client.<namespace>.svc.cluster.local:9200"
+# Graylog Configuration
 
-```
-<namespace> é a namespace onde o graylog será instalado
+## inputs
 
-- definir uma senha para o graylog
-- definit se o input gelf será do tipo LB, NodePort ou ClusterIP
-Este parâmetro  'input.tcp.service' é endpoint:porta onde o file bit vai enviar a colheita de logs. Caso seja um filebit em um ambiente
-não local, este parâmetro deve ser de tal forma que permita uma conexão advinda da internet (NodePort, LoadBalancer). 
+## users
 
-- definir a url do host e o host external (url de acesso ao graylog: externalUri e o ingress.host)
-- fazer modificações de outros parâmetros conforme conveniência (recursos por exemplo.)
+## streams
 
-### fluentbit
-- modificar os parâmetros do config para a colheita de logs atender as necessidades do cliente
-    - outputs: qual é o nome do serviço de entrada o graylog gelf
-    - inputs: Quais namespaces serão excluidas das colheitas de logs?
+## indexes
 
-### mongodb
-- modificar parâmetros à sua escolha.
-
-### elasticsearch:
-- modificar parâmetros à sua escolha
-
-## develop | production | stage | sandbox
-- habilitar ou desabilitar o que será instalado.
+## dashboards

@@ -1,0 +1,9 @@
+compact: false
+directory:
+  - .
+evaluate-variables: true
+framework:
+  - all
+output: cli
+quiet: false 
+soft-fail: false

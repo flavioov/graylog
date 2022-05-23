@@ -1,0 +1,127 @@
+stages:
+  #- scanning
+  - validate
+  - test
+  - plan
+  - scanning
+  - apply
+  - state
+
+.base:
+  image:
+    name: hashicorp/terraform
+    entrypoint: [""]
+  before_script:
+    - terraform init
+
+validate:
+  extends: .base
+  stage: validate
+  script:
+    - terraform validate
+
+TFLint-scan:
+  image:
+    name: ubuntu:20.04
+  stage: test
+  script:
+    - apt update
+    - apt install curl unzip -y
+    - curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+    - tflint --init
+    - tflint --color
+
+checkov-scan:
+  stage: test
+  allow_failure: true  # True for AutoDevOps compatibility
+  image:
+    name: bridgecrew/checkov:latest
+    entrypoint:
+      - '/usr/bin/env'
+      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+  script:
+    - checkov --config-file .checkov.yml
+
+kics-scan:
+  image:
+      name: checkmarx/kics:latest
+      entrypoint: [""]
+  stage: test
+  script:
+      - kics scan --no-progress -p ${PWD} -o ${PWD} --config /repo/.kics.yml -report-formats json --output-name kics-results.json
+  artifacts:
+      paths:
+          - kics-results.json
+      when: always
+
+tfsec-scan:
+  image:
+      name: aquasec/tfsec-ci:latest
+      entrypoint: [""]
+  stage: test
+  script:
+      - tfsec $(pwd) --no-color --format lovely --out output --minimum-severity MEDIUM
+  artifacts:
+    paths:
+        - output 
+
+plan:
+  extends: .base
+  stage: plan
+  script:
+    - terraform plan -out tf.plan
+    - terraform show -json tf.plan  > tf.json 
+  artifacts:
+    paths:
+      - .terraform/
+      - tf.plan
+      - tf.json
+  needs:
+    - kics-scan
+    - checkov-scan
+    - kics-codeclimate
+    - kics-glsast
+    - TFLint-scan
+    - tfsec-scan
+    - validate
+
+checkov-plan-scan:
+  stage: scanning
+  allow_failure: true  # True for AutoDevOps compatibility
+  image:
+    name: bridgecrew/checkov:latest
+    entrypoint:
+      - '/usr/bin/env'
+      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+  script:
+    - checkov --config-file .checkov-plan.yml
+
+
+apply:
+  extends: .base
+  stage: apply
+  script:
+    - terraform apply plan.out
+  when: manual
+  needs:
+    - plan
+
+objects:
+  extends: .base
+  stage: state
+  script:
+    - terraform state list
+  needs:
+    - apply
+
+file:
+  extends: .base
+  stage: state
+  script:
+    - terraform state pull > terraform.tfstate
+  needs:
+    - apply
+  artifacts:
+    paths:
+      - terraform.tfstate
+    expire_in: 7 days

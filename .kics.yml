@@ -1,0 +1,14 @@
+path: ./
+verbose: true
+log-file: true
+fail-on: 
+  - high
+  - medium
+#  - low
+#  - info
+type: 
+  - Dockerfile
+  - Kubernetes
+  - Ansible
+  - Terraform
+output-path: "results"
